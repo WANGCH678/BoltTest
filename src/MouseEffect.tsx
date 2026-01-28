@@ -127,19 +127,37 @@ export function MouseEffect() {
       animationIdRef.current = requestAnimationFrame(animate);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('click', handleClick);
-    window.addEventListener('resize', handleWindowResize);
+    const startListeners = () => {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('click', handleClick);
+      window.addEventListener('resize', handleWindowResize);
+      animate();
+    };
 
-    animate();
-
-    return () => {
+    const stopListeners = () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('click', handleClick);
       window.removeEventListener('resize', handleWindowResize);
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current);
       }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopListeners();
+        particlesRef.current = [];
+      } else {
+        startListeners();
+      }
+    };
+
+    startListeners();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopListeners();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
